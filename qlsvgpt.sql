@@ -67,7 +67,7 @@ CREATE TABLE SinhVien (
     HoTen NVARCHAR(100) NOT NULL,
     NgaySinh DATE NOT NULL,
     GioiTinh NVARCHAR(10) NOT NULL,
-    Anh VARCHAR(255),
+   
     MaLop VARCHAR(8) NOT NULL,
     SDT VARCHAR(15) NOT NULL,
     Email VARCHAR(100) UNIQUE,
@@ -202,42 +202,48 @@ WHERE TrangThai = N'Đã đăng ký'
 GO
 
 ---- 13. BẢNG ĐIỂM
---CREATE TABLE BangDiem (
---    MaSV CHAR(10) NOT NULL,
---    MaHP VARCHAR(15) NOT NULL,
---    DiemCC DECIMAL(4,2),
---    DiemGK DECIMAL(4,2),
---    DiemThi DECIMAL(4,2),
---    DiemTK AS CAST(
---        ROUND(
---            ISNULL(DiemCC, 0) * 0.1 +
---            ISNULL(DiemGK, 0) * 0.3 +
---            ISNULL(DiemThi, 0) * 0.6, 2
---        ) AS DECIMAL(4,2)
---    ),
---    TrangThaiDuyet NVARCHAR(50) NOT NULL DEFAULT N'Chưa duyệt',
---    PRIMARY KEY (MaSV, MaHP),
---    CONSTRAINT FK_BangDiem_SinhVien FOREIGN KEY (MaSV)
---        REFERENCES SinhVien(MaSV),
---    CONSTRAINT FK_BangDiem_HocPhan FOREIGN KEY (MaHP)
---        REFERENCES HocPhan(MaHP),
---    CONSTRAINT CK_BangDiem_DiemCC CHECK (DiemCC BETWEEN 0 AND 10),
---    CONSTRAINT CK_BangDiem_DiemGK CHECK (DiemGK BETWEEN 0 AND 10),
---    CONSTRAINT CK_BangDiem_DiemThi CHECK (DiemThi BETWEEN 0 AND 10)
---)
---GO
+CREATE TABLE BangDiem (
+    MaSV CHAR(10) NOT NULL,
+    MaHP VARCHAR(50) NOT NULL,
 
----- 14. LỊCH THI
---CREATE TABLE LichThi (
---    MaLichThi VARCHAR(15) PRIMARY KEY,
---    MaHP VARCHAR(15) NOT NULL,
---    NgayThi DATE NOT NULL,
---    GioThi TIME NOT NULL,
---    PhongThi NVARCHAR(50) NOT NULL,
---    CONSTRAINT FK_LichThi_HocPhan FOREIGN KEY (MaHP)
---        REFERENCES HocPhan(MaHP)
---)
---GO
+    DiemGK DECIMAL(4,2) NULL,
+    DiemCK DECIMAL(4,2) NULL,
+
+    PRIMARY KEY (MaSV, MaHP),
+
+    CONSTRAINT FK_BangDiem_SinhVien 
+        FOREIGN KEY (MaSV) REFERENCES SinhVien(MaSV),
+
+    CONSTRAINT FK_BangDiem_HocPhan 
+        FOREIGN KEY (MaHP) REFERENCES HocPhan(MaHP),
+
+    CONSTRAINT CK_BangDiem_DiemGK 
+        CHECK (DiemGK IS NULL OR DiemGK BETWEEN 0 AND 10),
+
+    CONSTRAINT CK_BangDiem_DiemCK 
+        CHECK (DiemCK IS NULL OR DiemCK BETWEEN 0 AND 10)
+)
+GO
+
+CREATE TABLE LichThi (
+    MaLT VARCHAR(20) PRIMARY KEY,
+    MaHP VARCHAR(50) NOT NULL,
+    NgayThi DATE NOT NULL,
+    GioThi TIME NOT NULL,
+    PhongThi NVARCHAR(20) NOT NULL,
+    HinhThuc NVARCHAR(50) NOT NULL,
+    ThoiLuong INT NOT NULL,
+
+    CONSTRAINT FK_LichThi_HocPhan
+        FOREIGN KEY (MaHP) REFERENCES HocPhan(MaHP),
+
+    CONSTRAINT CK_LichThi_HinhThuc
+        CHECK (HinhThuc IN (N'Tự luận', N'Trắc nghiệm', N'Tự luận + trắc nghiệm')),
+
+    CONSTRAINT CK_LichThi_ThoiLuong
+        CHECK (ThoiLuong > 0)
+)
+GO
 
 ---- 15. HỌC PHÍ
 --CREATE TABLE HocPhi (
@@ -320,7 +326,7 @@ GO
 -- LỚP
 INSERT INTO Lop (MaLop, TenLop, MaNienKhoa, MaNganh) VALUES
 ('DH23IT01', N'Công nghệ thông tin ĐH 2023 - 01', 'K23', 'IT'),
-('DH21IT02', N'Công nghệ pthông tin ĐH 2021 - 02', 'K21', 'IT'),
+('DH21IT02', N'Công nghệ thông tin ĐH 2021 - 02', 'K21', 'IT'),
 ('DH23IM01', N'Hệ thống thông tin ĐH 2023 - 01', 'K23', 'IM'),
 ('DH21BA01', N'Quản trị kinh doanh ĐH 2021 - 01', 'K21', 'BA'),
 ('DH22AC01', N'Kế toán ĐH 2022 - 01', 'K22', 'AC'),
@@ -328,14 +334,14 @@ INSERT INTO Lop (MaLop, TenLop, MaNienKhoa, MaNganh) VALUES
 GO
 
 -- SINH VIÊN
-INSERT INTO SinhVien (MaSV, HoTen, NgaySinh, GioiTinh, Anh, MaLop, SDT, Email, DiaChi, TrangThaiHocTap) VALUES
-('2351010001', N'Nguyễn Minh Anh', '12/05/2003', N'Nữ', 'images/sv1.jpg', 'DH23IT01', '0909000001', '2351010001anh@ou.edu.vn', N'TP.HCM', N'Đang học'),
-('2251010002', N'Trần Quốc Bảo', '20/08/2003', N'Nam', 'images/sv2.jpg', 'DH21IT02', '0909000002', '2251010002bao@ou.edu.vn', N'Cần Thơ', N'Đang học'),
-('2354000033', N'Lê Hoài Nam', '03/11/2005', N'Nam', 'images/sv3.jpg', 'DH23IM01', '0909000003', '2351010003nam@ou.edu.vn', N'Hải Phòng', N'Đang học'),
-('2254000012', N'Phạm Gia Hân', '15/01/2004', N'Nữ', 'images/sv4.jpg', 'DH23IM01', '0909000004', '2251020001han@ou.edu.vn', N'TP.HCM', N'Đang học'),
-('2252010001', N'Võ Đức Huy', '09/01/2004', N'Nam', 'images/sv5.jpg', 'DH21BA01', '0909000005', '2252010001huy@ou.edu.vn', N'An Giang', N'Đang học'),
-('2253010001', N'Ngô Thu Trang', '25/06/2004', N'Nữ', 'images/sv6.jpg', 'DH22AC01', '0909000006', '2253010001trang@ou.edu.vn', N'TP.HCM', N'Đang học'),
-('2354010001', N'Đặng Khánh Linh', '17/02/2003', N'Nữ', 'images/sv7.jpg', 'DH23EL01', '0909000007', '2354010001linh@ou.edu.vn', N'Tây Ninh', N'Đang học')
+INSERT INTO SinhVien (MaSV, HoTen, NgaySinh, GioiTinh,  MaLop, SDT, Email, DiaChi, TrangThaiHocTap) VALUES
+('2351010001', N'Nguyễn Minh Anh', '12/05/2003', N'Nữ', 'DH23IT01', '0909000001', '2351010001anh@ou.edu.vn', N'TP.HCM', N'Đang học'),
+('2251010002', N'Trần Quốc Bảo', '20/08/2003', N'Nam', 'DH21IT02', '0909000002', '2251010002bao@ou.edu.vn', N'Cần Thơ', N'Đang học'),
+('2354000033', N'Lê Hoài Nam', '03/11/2005', N'Nam', 'DH23IM01', '0909000003', '2351010003nam@ou.edu.vn', N'Hải Phòng', N'Đang học'),
+('2254000012', N'Phạm Gia Hân', '15/01/2004', N'Nữ', 'DH23IM01', '0909000004', '2251020001han@ou.edu.vn', N'TP.HCM', N'Đang học'),
+('2252010001', N'Võ Đức Huy', '09/01/2004', N'Nam', 'DH21BA01', '0909000005', '2252010001huy@ou.edu.vn', N'An Giang', N'Đang học'),
+('2253010001', N'Ngô Thu Trang', '25/06/2004', N'Nữ',  'DH22AC01', '0909000006', '2253010001trang@ou.edu.vn', N'TP.HCM', N'Đang học'),
+('2354010001', N'Đặng Khánh Linh', '17/02/2003', N'Nữ', 'DH23EL01', '0909000007', '2354010001linh@ou.edu.vn', N'Tây Ninh', N'Đang học')
 GO
 
 -- GIẢNG VIÊN
@@ -413,11 +419,38 @@ INSERT INTO DangKyHocPhan(MaSV,MaHP,NgayDangKy,NgayHuy,TrangThai) VALUES
 ('2351010001', 'DH23IT01-ITEC2502-242', '2026-05-21 08:20:00', '2026-05-21 10:00:00', N'Đã hủy');
 
 
+INSERT INTO BangDiem (MaSV, MaHP, DiemGK, DiemCK) VALUES
+('2351010001', 'DH23IT01-ITEC2502-242', 8.0, 8.5),
+('2351010001', 'DH23IT01-ITEC2401-242', 7.0, 8.0),
+
+('2251010002', 'DH21IT02-ITEC2502-242', 6.5, 7.0),
+('2251010002', 'DH21IT02-ITEC2401-242', 1.5, 8.0),
+
+('2354000033', 'DH23IM01-MISY3301-242', 7.0, 6.5),
+('2254000012', 'DH23IM01-MISY3301-242', 4.0, 5.0),
+
+('2252010001', 'DH21BA01-BADM1301-242', 8.5, 9.0),
+('2253010001', 'DH22AC01-ACCO2301-242', 3.5, 4.0)
+GO
+
+INSERT INTO LichThi 
+(MaLT, MaHP, NgayThi, GioThi, PhongThi, HinhThuc, ThoiLuong)
+VALUES
+('LT001', 'DH23IT01-ITEC2502-242', '2026-06-10', '07:30', N'A101', N'Tự luận', 90),
+('LT002', 'DH23IT01-ITEC2401-242', '2026-06-12', '09:30', N'B201', N'Trắc nghiệm', 60),
+('LT003', 'DH23IT01-MISY3301-242', '2026-06-14', '13:30', N'C301', N'Tự luận + trắc nghiệm', 90),
+('LT004', 'DH21IT02-ITEC2502-242', '2026-06-16', '07:30', N'A102', N'Tự luận', 90),
+('LT005', 'DH21IT02-ITEC2401-242', '2026-06-18', '09:30', N'B202', N'Trắc nghiệm', 60),
+('LT006', 'DH23IM01-MISY3301-242', '2026-06-20', '13:30', N'C302', N'Tự luận + trắc nghiệm', 90);
+GO
+
+
 -- TÀI KHOẢN
 INSERT INTO TaiKhoan (TenDangNhap, MatKhau, VaiTro, TrangThai, MaSV, MaGV) VALUES
+
 ('2351010001', '123456', N'SinhVien', 1, '2351010001', NULL),
 ('2251010002', '123456', N'SinhVien', 1, '2251010002', NULL),
-('235401000', '123456', N'SinhVien', 1, '2354010001', NULL),
+('2354000033', '123456', N'SinhVien', 1, '2354000033', NULL),
 
 
 ('gv001', '123456', N'GiangVien', 1, NULL, 'GV001'),
@@ -428,6 +461,8 @@ INSERT INTO TaiKhoan (TenDangNhap, MatKhau, VaiTro, TrangThai, MaSV, MaGV) VALUE
 ('admin', 'admin123', N'Admin', 1, NULL, NULL)
 GO
 
+
+-- view môn học
 CREATE VIEW vw_MonHoc_ChiTiet
 AS
 SELECT 
@@ -476,6 +511,7 @@ JOIN GiangVien gv ON hp.MaGV = gv.MaGV
 JOIN Lop lop ON hp.MaLop = lop.MaLop
 GO
 
+-- view tkb
 CREATE VIEW vw_ThoiKhoaBieu_ChiTiet
 AS
 SELECT
@@ -584,4 +620,128 @@ OUTER APPLY (
         FOR XML PATH(''), TYPE
     ).value('.', 'NVARCHAR(MAX)'), 1, 2, N'') AS LichHoc
 ) lich
+GO
+
+--view bảng điểm
+DROP VIEW IF EXISTS vw_BangDiem_ChiTiet;
+GO
+
+CREATE VIEW vw_BangDiem_ChiTiet
+AS
+SELECT
+    dk.MaSV,
+    sv.HoTen AS TenSV,
+
+    dk.MaHP,
+    mh.MaMH,
+    mh.TenMH,
+    mh.SoTinChi,
+
+    hk.MaHK,
+    hk.TenHocKy,
+    hk.NamHoc,
+
+    hp.MaLop,
+    lop.TenLop,
+
+    bd.DiemGK,
+    bd.DiemCK,
+
+    CAST(
+        CASE 
+            WHEN bd.MaSV IS NULL THEN NULL
+            WHEN bd.DiemGK IS NULL THEN NULL
+            WHEN bd.DiemCK IS NULL THEN NULL
+            ELSE ROUND(bd.DiemGK * 0.4 + bd.DiemCK * 0.6, 2)
+        END AS DECIMAL(4,2)
+    ) AS DiemTK,
+
+    CASE 
+        WHEN bd.MaSV IS NULL THEN NULL
+        WHEN bd.DiemGK IS NULL THEN N'F'
+        WHEN bd.DiemCK IS NULL THEN NULL
+        WHEN bd.DiemGK < 2 OR bd.DiemCK < 2 THEN N'F'
+        WHEN ROUND(bd.DiemGK * 0.4 + bd.DiemCK * 0.6, 2) >= 8.5 THEN N'A'
+        WHEN ROUND(bd.DiemGK * 0.4 + bd.DiemCK * 0.6, 2) >= 7.0 THEN N'B'
+        WHEN ROUND(bd.DiemGK * 0.4 + bd.DiemCK * 0.6, 2) >= 5.5 THEN N'C'
+        WHEN ROUND(bd.DiemGK * 0.4 + bd.DiemCK * 0.6, 2) >= 4.0 THEN N'D'
+        ELSE N'F'
+    END AS DiemChu,
+
+    CAST(
+        CASE 
+            WHEN bd.MaSV IS NULL THEN NULL
+            WHEN bd.DiemGK IS NULL THEN 0
+            WHEN bd.DiemCK IS NULL THEN NULL
+            WHEN bd.DiemGK < 2 OR bd.DiemCK < 2 THEN 0
+            WHEN ROUND(bd.DiemGK * 0.4 + bd.DiemCK * 0.6, 2) >= 8.5 THEN 4.0
+            WHEN ROUND(bd.DiemGK * 0.4 + bd.DiemCK * 0.6, 2) >= 7.0 THEN 3.0
+            WHEN ROUND(bd.DiemGK * 0.4 + bd.DiemCK * 0.6, 2) >= 5.5 THEN 2.0
+            WHEN ROUND(bd.DiemGK * 0.4 + bd.DiemCK * 0.6, 2) >= 4.0 THEN 1.0
+            ELSE 0
+        END AS DECIMAL(3,1)
+    ) AS DiemHe4,
+
+    CASE 
+        WHEN bd.MaSV IS NULL THEN N'Chưa nhập'
+        WHEN bd.DiemGK IS NULL THEN N'Cấm thi'
+        WHEN bd.DiemCK IS NULL THEN N'Chưa nhập đủ điểm'
+        WHEN bd.DiemGK < 2 OR bd.DiemCK < 2 THEN N'Không đạt'
+        WHEN ROUND(bd.DiemGK * 0.4 + bd.DiemCK * 0.6, 2) >= 4 THEN N'Đạt'
+        ELSE N'Không đạt'
+    END AS KetQua
+
+FROM DangKyHocPhan dk
+JOIN SinhVien sv ON dk.MaSV = sv.MaSV
+JOIN HocPhan hp ON dk.MaHP = hp.MaHP
+JOIN MonHoc mh ON hp.MaMH = mh.MaMH
+JOIN HocKy hk ON hp.MaHK = hk.MaHK
+JOIN Lop lop ON hp.MaLop = lop.MaLop
+LEFT JOIN BangDiem bd ON dk.MaSV = bd.MaSV AND dk.MaHP = bd.MaHP
+WHERE dk.TrangThai = N'Đã đăng ký';
+GO
+
+CREATE OR ALTER VIEW vw_LichThi_ChiTiet
+AS
+SELECT 
+    lt.MaLT,
+    lt.MaHP,
+    hp.MaMH,
+    mh.TenMH,
+    hp.MaLop,
+    hk.TenHocKy,
+    hk.NamHoc,
+
+    lt.NgayThi,
+    lt.GioThi,
+    lt.PhongThi,
+    lt.HinhThuc,
+    lt.ThoiLuong,
+
+    COUNT(CASE 
+        WHEN dk.TrangThai = N'Đã đăng ký'
+             AND bd.DiemGK IS NOT NULL
+        THEN dk.MaSV
+    END) AS SiSoDuThi
+
+FROM LichThi lt
+JOIN HocPhan hp ON lt.MaHP = hp.MaHP
+JOIN MonHoc mh ON hp.MaMH = mh.MaMH
+JOIN HocKy hk ON hp.MaHK = hk.MaHK
+LEFT JOIN DangKyHocPhan dk ON hp.MaHP = dk.MaHP
+LEFT JOIN BangDiem bd ON dk.MaSV = bd.MaSV AND dk.MaHP = bd.MaHP
+
+GROUP BY 
+    lt.MaLT,
+    lt.MaHP,
+    hp.MaMH,
+    mh.TenMH,
+    hp.MaLop,
+    hk.TenHocKy,
+    hk.NamHoc,
+    lt.NgayThi,
+    lt.GioThi,
+    lt.PhongThi,
+    lt.HinhThuc,
+    lt.ThoiLuong
 GO
